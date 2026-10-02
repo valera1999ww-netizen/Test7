@@ -1,1 +1,175 @@
-index.html.
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Telegram Roulette</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="app">
+
+  <div class="topbar">
+    <div>
+      <div class="eyebrow">TELEGRAM ROULETTE</div>
+      <h1>🎰 Рулетка</h1>
+    </div>
+
+    <div class="balance-pill">
+      🎁 Безкоштовний спін
+    </div>
+  </div>
+
+  <div class="card">
+
+    <div class="wheel-wrap">
+      <div class="pointer"></div>
+      <canvas id="wheel" width="600" height="600"></canvas>
+    </div>
+
+    <div class="result">
+      <div class="win-title">ВАШ ВИГРАШ</div>
+      <div class="win-amount" id="result">—</div>
+      <div class="win-sub">
+        Крути рулетку та спробуй свою удачу
+      </div>
+    </div>
+
+    <button class="spin-button" id="spin">
+      🎰 КРУТИТИ
+    </button>
+
+    <button class="secondary-button" id="telegram">
+      📲 ПІДПИСАТИСЯ НА TELEGRAM
+    </button>
+
+    <div class="hint">
+      Підпишись на канал, щоб отримати безкоштовний спін.
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+const canvas = document.getElementById("wheel");
+const ctx = canvas.getContext("2d");
+const spinButton = document.getElementById("spin");
+const result = document.getElementById("result");
+
+const prizes = ["10 грн", "20 грн", "30 грн", "10 грн", "20 грн", "30 грн"];
+const colors = ["#7c5cff", "#22d3ee", "#ff5575", "#5e48db", "#16a6b6", "#d94363"];
+
+let rotation = 0;
+let spinning = false;
+
+function drawWheel() {
+  const center = canvas.width / 2;
+  const radius = 270;
+  const slice = (Math.PI * 2) / prizes.length;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  prizes.forEach((prize, i) => {
+    const start = rotation + i * slice;
+    const end = start + slice;
+
+    ctx.beginPath();
+    ctx.moveTo(center, center);
+    ctx.arc(center, center, radius, start, end);
+    ctx.closePath();
+
+    ctx.fillStyle = colors[i];
+    ctx.fill();
+
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 5;
+    ctx.stroke();
+
+    ctx.save();
+
+    ctx.translate(center, center);
+    ctx.rotate(start + slice / 2);
+
+    ctx.fillStyle = "#fff";
+    ctx.font = "900 32px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText(prize, radius * 0.68, 10);
+
+    ctx.restore();
+  });
+
+  ctx.beginPath();
+  ctx.arc(center, center, 55, 0, Math.PI * 2);
+  ctx.fillStyle = "#121827";
+  ctx.fill();
+
+  ctx.strokeStyle = "#ffffff";
+  ctx.lineWidth = 5;
+  ctx.stroke();
+
+  ctx.fillStyle = "#fff";
+  ctx.font = "900 28px Arial";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("🎰", center, center);
+}
+
+drawWheel();
+
+spinButton.addEventListener("click", () => {
+  if (spinning) return;
+
+  spinning = true;
+  spinButton.disabled = true;
+  result.textContent = "🎰";
+
+  const winner = Math.floor(Math.random() * prizes.length);
+
+  const slice = (Math.PI * 2) / prizes.length;
+
+  const target =
+    (Math.PI * 3 / 2) -
+    (winner + 0.5) * slice;
+
+  const extra = Math.PI * 2 * 6;
+
+  const startRotation = rotation;
+  const finalRotation = extra + target;
+
+  const duration = 4000;
+  const startTime = performance.now();
+
+  function animate(time) {
+    const progress = Math.min((time - startTime) / duration, 1);
+
+    const ease =
+      1 - Math.pow(1 - progress, 4);
+
+    rotation =
+      startRotation +
+      (finalRotation - startRotation) * ease;
+
+    drawWheel();
+
+    if (progress < 1) {
+      requestAnimationFrame(animate);
+    } else {
+      result.textContent = prizes[winner];
+      spinning = false;
+      spinButton.disabled = false;
+    }
+  }
+
+  requestAnimationFrame(animate);
+});
+
+document.getElementById("telegram").onclick = () => {
+  window.open("https://t.me/ua_2024k", "_blank");
+};
+</script>
+
+</body>
+</html>
